@@ -1,0 +1,356 @@
+import java.util.Scanner;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.lang.reflect.Array;
+
+
+public class wordSearch {
+public static final String GREEN = "\033[032m";
+public static final String RESET = "\033[0m";
+  public static void main(String[] args) {
+
+
+      Scanner scnr = new Scanner(System.in);
+      int numLines = 0;
+
+
+      System.out.println("Welcome to Word Search Solver. Paste your word Search below. Press enter twice when finished (link to some word searches: https://wordmint.com/public_puzzles/11097).");
+      
+      ArrayList<String> searchRowsList = new ArrayList<String>();
+     
+      
+      while(true){
+        String nextLine = scnr.nextLine();
+        if(nextLine.isBlank() == false){
+          searchRowsList.add(nextLine);
+          numLines++;
+          }
+        else
+          break;
+        }                                                                                                         
+      
+      String[] searchRows = new String[numLines];
+      for(int i = 0; i < numLines; i++){
+        searchRows[i] = searchRowsList.get(i);
+     }
+
+      ArrayList<String> Words = new ArrayList<String>();
+
+    
+     System.out.println("Enter the words you need to find seperate by spaces or newlines. Type \"end!\" as your last word. For increased accuracy, remove spaces between mutli-word tokens.");
+    String nextWord;
+      while(true){
+      nextWord = scnr.next();
+      if(!nextWord.equals("end!"))
+        Words.add(nextWord);
+      else
+        break;
+      }
+
+      double time1 =System.currentTimeMillis();
+
+     ArrayList <Integer[]> columnsAndLines = wordMatch(Words, searchRows, numLines);
+     Integer[] colNums = columnsAndLines.get(0);
+     Integer[] lineNums =columnsAndLines.get(1);
+
+
+
+    System.out.println();
+    System.out.println("Solved wordsearch:");
+
+     for(int i = 0; i < numLines; i++){
+      System.out.printf("%-4d", i+1);
+       for(int j = 0; j < searchRows[i].length(); j++){
+        boolean trueChar = false;
+         for(int k = 0; k < colNums.length; k++){
+          if(lineNums[k] != null){
+            if(i == lineNums[k]){
+              if(j == colNums[k]){
+                trueChar = true;
+                System.out.print(GREEN + searchRows[i].charAt(j) + RESET);
+                break;
+            }  
+
+            }
+          }  
+         }
+        if(trueChar == false){
+        System.out.print(searchRows[i].charAt(j));
+        }
+
+       }
+        System.out.println();
+
+     }
+
+     double timeElapsed = System.currentTimeMillis() - time1;
+
+     System.out.println("milliseconds elapsed : " + timeElapsed);
+     }
+
+
+
+
+  public static ArrayList<Integer[]> wordMatch(ArrayList<String> words, String[] searchRows2, int numLines){
+    ArrayList<Integer> colNums = new ArrayList<Integer>();
+    ArrayList<Integer> lineNums = new ArrayList<Integer>();
+     for(int v = 0; v < words.size(); v++){
+       String word = words.get(v);
+       for(int i = 0; i < numLines; i++){
+        for(int j = 0; j < searchRows2[i].length(); j+=2){
+          ArrayList<Integer[]> useNums = charSearch(i, j, word, searchRows2, numLines);
+          Integer[] addColumns = useNums.get(0);
+          Integer[] addRows = useNums.get(1);
+              for(int k = 0; k < addRows.length; k++){
+                  lineNums.add(addRows[k]);
+                  colNums.add(addColumns[k]);
+              }
+          }
+        }
+     }
+    Integer[] colNumsFinal = colNums.toArray(new Integer[0]);
+    Integer[] lineNumsFinal = lineNums.toArray(new Integer[0]);
+    ArrayList<Integer[]> colNumsLineNums = new ArrayList<Integer[]>();
+    colNumsLineNums.add(colNumsFinal);
+    colNumsLineNums.add(lineNumsFinal);
+    return colNumsLineNums;
+}
+
+  public static ArrayList<Integer[]> charSearch(int lineNum, int charNum, String word, String[] searchRows2, int numLines){
+    int origLine = lineNum;
+    String wordCheck = "";
+    Integer[] linesOfWord = new Integer[word.length()];
+    Integer[] charsOfWord = new Integer[word.length()];
+    int j = 0;
+    
+    Integer[] linesOfWordNull = new Integer[0];
+    Integer[] charsOfWordNull = new Integer[0];
+    ArrayList<Integer[]> colNumsLineNumsNull = new ArrayList<Integer[]>();
+        colNumsLineNumsNull.add(charsOfWordNull);
+        colNumsLineNumsNull.add(linesOfWordNull);
+    //if the first character does not match, return null
+    if(!Character.toString(searchRows2[lineNum].charAt(charNum)).equalsIgnoreCase(Character.toString(word.charAt(j)))){
+        return colNumsLineNumsNull;
+      }
+
+    //search to the right of the character
+    for(int i = charNum; i<searchRows2[0].length();i+=2){
+
+      if(j >= word.length()){
+        break;
+      }
+
+      if(!Character.toString(searchRows2[lineNum].charAt(i)).equalsIgnoreCase(Character.toString(word.charAt(j)))){
+        break;
+      }
+
+      wordCheck = wordCheck + searchRows2[lineNum].charAt(i);
+      linesOfWord[j] = lineNum;
+      charsOfWord[j] = i;
+      if (wordCheck.equalsIgnoreCase(word)){
+        ArrayList<Integer[]> colNumsLineNums = new ArrayList<Integer[]>();
+        colNumsLineNums.add(charsOfWord);
+        colNumsLineNums.add(linesOfWord);
+        return colNumsLineNums;
+        }
+      j++;
+    }
+    Integer[] linesOfWord2 = new Integer[word.length()];
+    Integer[] charsOfWord2 = new Integer[word.length()];
+     j = 0;
+    wordCheck = "";
+    //search to the left of the character
+    for(int i = charNum; i >= 0 ;i-=2){
+
+      if(j >= word.length()){
+        break;
+      }
+
+      if(!Character.toString(searchRows2[lineNum].charAt(i)).equalsIgnoreCase(Character.toString(word.charAt(j)))){
+        break;
+      }
+
+      wordCheck = wordCheck + searchRows2[lineNum].charAt(i);
+      linesOfWord2[j] = lineNum;
+      charsOfWord2[j] = i;
+      if (wordCheck.equalsIgnoreCase(word)){
+        ArrayList<Integer[]> colNumsLineNums = new ArrayList<Integer[]>();
+        colNumsLineNums.add(charsOfWord2);
+        colNumsLineNums.add(linesOfWord2);
+        return colNumsLineNums;
+        }
+
+      j++;
+    }
+    Integer[] linesOfWord3 = new Integer[word.length()];
+    Integer[] charsOfWord3 = new Integer[word.length()];
+     j = 0;
+    wordCheck = "";
+    //search down
+    for(int i = lineNum; i<numLines ;i++){
+
+      if(j >= word.length()){
+        break;
+      }
+
+      if(!Character.toString(searchRows2[i].charAt(charNum)).equalsIgnoreCase(Character.toString(word.charAt(j)))){
+        break;
+      }
+      wordCheck = wordCheck + searchRows2[i].charAt(charNum);
+      linesOfWord3[j] = i;
+      charsOfWord3[j] = charNum;
+      if (wordCheck.equalsIgnoreCase(word)){
+        ArrayList<Integer[]> colNumsLineNums = new ArrayList<Integer[]>();
+        colNumsLineNums.add(charsOfWord3);
+        colNumsLineNums.add(linesOfWord3);
+        return colNumsLineNums;
+        }
+
+      j++;
+      }
+      Integer[] linesOfWord4 = new Integer[word.length()];
+      Integer[] charsOfWord4 = new Integer[word.length()];
+      j = 0;
+    wordCheck = "";
+    //search up
+    for(int i = lineNum; i >= 0;i--){
+
+      if(j >= word.length()){
+        break;
+      }
+
+      if(!Character.toString(searchRows2[i].charAt(charNum)).equalsIgnoreCase(Character.toString(word.charAt(j)))){
+        break;
+      }
+
+      wordCheck = wordCheck + searchRows2[i].charAt(charNum);
+      linesOfWord4[j] = i;
+      charsOfWord4[j] = charNum;
+      if (wordCheck.equalsIgnoreCase(word)){
+        ArrayList<Integer[]> colNumsLineNums = new ArrayList<Integer[]>();
+        colNumsLineNums.add(charsOfWord4);
+        colNumsLineNums.add(linesOfWord4);
+        return colNumsLineNums;
+        }
+
+      j++;
+     }
+      Integer[] linesOfWord5 = new Integer[word.length()];
+      Integer[] charsOfWord5 = new Integer[word.length()];
+      j = 0;
+    wordCheck = "";
+    //search down and to the right
+    for(int i = charNum; i < searchRows2[0].length(); i+=2){
+      if(lineNum >= numLines || j >= word.length()){
+        break;
+      }
+
+      if(!Character.toString(searchRows2[lineNum].charAt(i)).equalsIgnoreCase(Character.toString(word.charAt(j)))){
+        break;
+      }
+
+      wordCheck = wordCheck + searchRows2[lineNum].charAt(i);
+      linesOfWord5[j] = lineNum;
+      charsOfWord5[j] = i;
+      if (wordCheck.equalsIgnoreCase(word)){
+        ArrayList<Integer[]> colNumsLineNums = new ArrayList<Integer[]>();
+        colNumsLineNums.add(charsOfWord5);
+        colNumsLineNums.add(linesOfWord5);
+        return colNumsLineNums;
+        }
+      j++;
+      lineNum++;
+    }
+    lineNum = origLine;
+    Integer[] linesOfWord6 = new Integer[word.length()];
+    Integer[] charsOfWord6 = new Integer[word.length()];
+    j = 0;
+    wordCheck = "";
+    //search down and to the left
+    for(int i = charNum; i >= 0 ; i-=2){
+
+      if(j >= word.length() || lineNum >= numLines){
+        break;
+      }
+
+      if(!Character.toString(searchRows2[lineNum].charAt(i)).equalsIgnoreCase(Character.toString(word.charAt(j)))){
+        break;
+      }
+
+      wordCheck = wordCheck + searchRows2[lineNum].charAt(i);
+      linesOfWord6[j] = lineNum;
+      charsOfWord6[j] = i;
+      if (wordCheck.equalsIgnoreCase(word)){
+        ArrayList<Integer[]> colNumsLineNums = new ArrayList<Integer[]>();
+        colNumsLineNums.add(charsOfWord6);
+        colNumsLineNums.add(linesOfWord6);
+        return colNumsLineNums;
+        }
+      j++;
+      lineNum++;
+    }
+    lineNum = origLine;
+    Integer[] linesOfWord7 = new Integer[word.length()];
+    Integer[] charsOfWord7 = new Integer[word.length()];
+    j = 0;
+    wordCheck = "";
+    //search up and to the left
+    for(int i = charNum; i >= 0;i-=2){
+
+      if(j >= word.length() || lineNum < 0){
+        break;
+      }
+
+      if(!Character.toString(searchRows2[lineNum].charAt(i)).equalsIgnoreCase(Character.toString(word.charAt(j)))){
+        break;
+      }
+
+      wordCheck = wordCheck + searchRows2[lineNum].charAt(i);
+      linesOfWord7[j] = lineNum;
+      charsOfWord7[j] = i;
+      if (wordCheck.equalsIgnoreCase(word)){
+        ArrayList<Integer[]> colNumsLineNums = new ArrayList<Integer[]>();
+        colNumsLineNums.add(charsOfWord7);
+        colNumsLineNums.add(linesOfWord7);
+        return colNumsLineNums;
+        }
+     j++;
+    lineNum--;
+    }
+    lineNum = origLine;
+    Integer[] linesOfWord8 = new Integer[word.length()];
+    Integer[] charsOfWord8 = new Integer[word.length()];
+    j = 0;
+    wordCheck = "";
+//search up and to the right
+    for(int i = charNum; i < searchRows2[0].length();i+=2){
+
+      if(j >= word.length() || lineNum < 0){
+        break;
+      }
+
+      if(!Character.toString(searchRows2[lineNum].charAt(i)).equalsIgnoreCase(Character.toString(word.charAt(j)))){
+        break;
+      }
+
+      wordCheck = wordCheck + searchRows2[lineNum].charAt(i);
+      linesOfWord8[j] = lineNum;
+      charsOfWord8[j] = i;
+      if (wordCheck.equalsIgnoreCase(word)){
+        ArrayList<Integer[]> colNumsLineNums = new ArrayList<Integer[]>();
+        colNumsLineNums.add(charsOfWord8);
+        colNumsLineNums.add(linesOfWord8);
+        return colNumsLineNums;
+        }
+      j++;
+      lineNum--;
+    }
+    lineNum = origLine;
+    
+    j = 0;
+    wordCheck = "";
+    
+        return colNumsLineNumsNull;
+  }
+
+}
